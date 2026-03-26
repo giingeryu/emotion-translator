@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(cuid())
+  clerkId       String         @unique
+  wechatOpenId  String?        @unique
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  children      ChildProfile[]
+  translations  Translation[]
+}
+
+model ChildProfile {
+  id            String         @id @default(cuid())
+  userId        String
+  name          String?
+  age           Int
+  temperament   String         // sensitive(敏感)/stubborn(倔强)/slow(慢热)/active(活泼)
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  translations  Translation[]
+  
+  @@index([userId])
+}
+
+model Translation {
+  id               String         @id @default(cuid())
+  userId           String
+  childProfileId   String?
+  originalText     String
+  scene            String
+  emotionLevel     Int
+  goal             String
+  positiveText     String
+  createdAt        DateTime       @default(now())
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  childProfile     ChildProfile?  @relation(fields: [childProfileId], references: [id])
+  
+  @@index([userId])
+  @@index([createdAt])
+}
